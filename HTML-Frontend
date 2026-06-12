@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition AI</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        #result {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Nutrition AI</h1>
+
+<form id="nutritionForm">
+
+    <label>Gewicht (kg)</label>
+    <input type="number" id="weight" required>
+
+    <label>Größe (cm)</label>
+    <input type="number" id="height" required>
+
+    <label>Ziel</label>
+    <select id="goal">
+        <option value="muscle_gain">Muskelaufbau</option>
+        <option value="fat_loss">Fettabbau</option>
+        <option value="maintain">Erhalt</option>
+    </select>
+
+    <label>Protein Ziel (g)</label>
+    <input type="number" id="protein" required>
+
+    <button type="submit">
+        Essensplan erstellen
+    </button>
+
+</form>
+
+<div id="result"></div>
+
+<script>
+document.getElementById("nutritionForm")
+.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const payload = {
+        weight: document.getElementById("weight").value,
+        height: document.getElementById("height").value,
+        goal: document.getElementById("goal").value,
+        protein: document.getElementById("protein").value
+    };
+
+    const response = await fetch(
+        "https://api.nutrition-ai.de/mealplan",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+    const data = await response.json();
+
+    document.getElementById("result").innerHTML =
+        `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+});
+</script>
+
+</body>
+</html>
