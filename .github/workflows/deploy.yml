@@ -1,0 +1,25 @@
+name: Deploy Webapp to Azure VM
+
+on:
+  push:
+    branches:
+      - main # Die Pipeline startet, sobald Code in den main-Branch gepusht wird
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Azure VM via SSH rsync
+      uses: easingthemes/ssh-deploy@v5
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.AZURE_SERVER_KEY }}
+        ARGS: "-rlgoDzvO --delete" # Synchronisiert sauber und löscht alte Dateien auf dem Server
+        SOURCE: "/" # Der Hauptordner Ihres Projekts (wo Ihre HTML-Dateien liegen)
+        REMOTE_HOST: "108.142.232.149" # Die IP-Adresse Ihres Azure-Servers
+        REMOTE_USER: "azureuser"
+        TARGET: "/var/www/html" # Der Web-Ordner von Nginx auf dem Server
+        EXCLUDE: "/.git/, /.github/, /terraform*, *.tf" # Diese DevOps-Dateien werden nicht auf den Webserver kopiert

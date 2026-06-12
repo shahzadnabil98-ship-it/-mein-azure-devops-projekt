@@ -11,13 +11,11 @@ provider "azurerm" {
   features {}
 }
 
-# 1. Ressourcengruppe
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-fitness-projekt-vm"
-  location = "westeurope"
+  name     = "rg-fitness-final"
+  location = "eastus2"
 }
 
-# 2. Virtuelles Netzwerk & Subnetz (wie VPC bei AWS)
 resource "azurerm_virtual_network" "vnet" {
   name                = "fitness-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -32,15 +30,13 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# 3. Öffentliche IP-Adresse für den Server
 resource "azurerm_public_ip" "public_ip" {
   name                = "fitness-public-ip"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
 }
 
-# 4. Sicherheitsgruppe / Firewall (wie AWS Security Group)
 resource "azurerm_network_security_group" "nsg" {
   name                = "fitness-nsg"
   location            = azurerm_resource_group.rg.location
@@ -57,21 +53,8 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-
-  security_rule {
-    name                       = "HTTP"
-    priority                   = 1002
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
 }
 
-# 5. Netzwerkschnittstelle erstellen
 resource "azurerm_network_interface" "nic" {
   name                = "fitness-nic"
   location            = azurerm_resource_group.rg.location
@@ -90,14 +73,13 @@ resource "azurerm_network_interface_security_group_association" "connect" {
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-# 6. Die kostenlose Linux-VM (Größe: Standard_B1s) mit Passwort-Login
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "fitness-linux-server"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
-  size                = "Standard_B1s" # 12 Monate kostenlos im Free Tier!
+  size                = "Standard_D2s_v3" # Extrem hohe Verfügbarkeit in den USA
   admin_username      = "azureuser"
-  admin_password      = "SicheresPasswort123!" # Bitte später ändern!
+  admin_password      = "SicheresPasswort123!"
   disable_password_authentication = false
 
   network_interface_ids = [
@@ -110,15 +92,14 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    publisher = "debian"
+    offer     = "debian-11"
+    sku       = "11-gen2"
     version   = "latest"
   }
 }
 
-# Ausgabe der öffentlichen IP nach dem Deployment
 output "public_ip_address" {
   value       = azurerm_public_ip.public_ip.ip_address
-  description = "Die öffentliche IP-Adresse Ihrer Linux-VM"
+  description = "IP-Adresse"
 }
