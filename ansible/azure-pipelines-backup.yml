@@ -10,14 +10,15 @@ trigger: none
 
 pool:
   vmImage: 'ubuntu-latest'
-
-steps:
 - task: Ansible@0
   inputs:
     ansibleInterface: 'remoteMachine'
-    connectionOverSsh: true
-    sshEndpoint: 'fitness-server-ssh'
-    playbookPathOnAgentMachine: 'ansible/backup.yml'
-    inventoriesAgentMachine: 'file'
-    inventoryFileOnAgentMachine: 'ansible/hosts'
-    failOnStdErr: true
+    connectionOverSsh: 'fitness-server-ssh'
+    playbookSourceRemoteMachine: 'agentMachine'
+    playbookRootRemoteMachine: 'ansible'
+    playbookPathLinkedArtifactOnRemoteMachine: 'backup.yml'
+    inventoriesRemoteMachine: 'file'
+    inventoryFileSourceRemoteMachine: 'agentMachine'
+    inventoryFileLinkedArtifactOnRemoteMachine: 'ansible/hosts'
+
+
