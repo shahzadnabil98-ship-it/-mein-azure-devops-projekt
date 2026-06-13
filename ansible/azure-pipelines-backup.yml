@@ -1,0 +1,21 @@
+schedules:
+- cron: "0 2 * * *" # Täglich um 02:00 Uhr nachts
+  displayName: Tägliches Nacht-Backup
+  branches:
+    include:
+    - main
+  always: true
+
+trigger: none # Verhindert automatischen Start bei Code-Push
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Ansible@0
+  inputs:
+    ansibleInterface: 'agentMachine'
+    playbookPathOnAgentMachine: 'ansible/backup.yml'
+    inventoriesAgentMachine: 'file'
+    inventoryFileOnAgentMachine: 'ansible/hosts'
+    failOnStdErr: true
