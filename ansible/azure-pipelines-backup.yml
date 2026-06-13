@@ -1,6 +1,6 @@
 schedules:
-- cron: "0 2 * * *" # Täglich um 02:00 Uhr nachts
-  displayName: Tägliches Nacht-Backup
+- cron: "25 6 * * *" # 06:25 Uhr UTC entspricht 08:25 Uhr deutscher Zeit (Sommerzeit)
+  displayName: Tägliches Backup um 08:25 Uhr
   branches:
     include:
     - main
