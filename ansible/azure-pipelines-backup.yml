@@ -1,6 +1,6 @@
 schedules:
-- cron: "15 9 * * *" # 09:15 Uhr UTC entspricht 11:15 Uhr deutscher Zeit
-  displayName: Test-Backup um 11:15 Uhr
+- cron: "0 9 * * *" # 09:00 Uhr UTC entspricht 11:00 Uhr deutscher Zeit
+  displayName: Test-Backup um 11:00 Uhr
   branches:
     include:
     - main
