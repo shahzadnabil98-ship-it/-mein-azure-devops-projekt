@@ -1,5 +1,5 @@
 schedules:
-- cron: "0 9 * * *"
+- cron: "0 9 * * *" # Täglich um 11:00 Uhr deutscher Zeit
   displayName: Tägliches Backup um 11:00 Uhr
   branches:
     include:
@@ -12,15 +12,28 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: Ansible@0
-  inputs:
-    ansibleInterface: 'remoteMachine'
-    connectionOverSsh: 'fitness-server-ssh'
-    sshEndpoint: 'fitness-server-ssh'
-    playbookPathLinkedArtifactOnRemoteMachine: 'ansible/backup.yml' # Geändertes Feld!
-    inventoriesAgentMachine: 'file'
-    inventoryFileOnAgentMachine: 'ansible/hosts'
-    failOnStdErr: true
+- script: |
+    # 1. SSH-Verzeichnis erstellen
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
 
+    # 2. Den privaten Schlüssel direkt in eine temporäre Datei schreiben
+    cat << 'EOF' > ~/.ssh/id_rsa
+    -----BEGIN RSA PRIVATE KEY-----
+    HIER_DEINEN_KOMPLETTEN_PRIVATEN_SCHLÜSSEL_VON_VORHIN_REINKOPIEREN
+    Achte darauf, dass alle Zeilen des Schlüssels hier untereinander stehen
+    -----END RSA PRIVATE KEY-----
+    EOF
+    
+    chmod 600 ~/.ssh/id_rsa
 
+    # 3. Den Server zu den bekannten Hosts hinzufügen, damit keine Abfrage kommt
+    ssh-keyscan -H 108.142.232.149 >> ~/.ssh/known_hosts
 
+    # 4. Ansible installieren (falls auf dem Microsoft-Agenten noch nicht vorhanden)
+    sudo apt-get update && sudo apt-get install -y ansible
+
+    # 5. Das Ansible-Playbook starten
+    echo "Starte Ansible-Playbook..."
+    ansible-playbook -i ansible/hosts ansible/backup.yml
+  displayName: 'Vollautomatisches Datenbank-Backup via Ansible'
