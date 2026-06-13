@@ -1,6 +1,6 @@
 schedules:
-- cron: "0 9 * * *" # 09:00 Uhr UTC entspricht 11:00 Uhr deutscher Zeit
-  displayName: Test-Backup um 11:00 Uhr
+- cron: "0 9 * * *"
+  displayName: Tägliches Backup um 11:00 Uhr
   branches:
     include:
     - main
@@ -10,15 +10,14 @@ trigger: none
 
 pool:
   vmImage: 'ubuntu-latest'
+
+steps:
 - task: Ansible@0
   inputs:
     ansibleInterface: 'remoteMachine'
-    connectionOverSsh: 'fitness-server-ssh'
-    playbookSourceRemoteMachine: 'agentMachine'
-    playbookRootRemoteMachine: 'ansible'
-    playbookPathLinkedArtifactOnRemoteMachine: 'backup.yml'
-    inventoriesRemoteMachine: 'file'
-    inventoryFileSourceRemoteMachine: 'agentMachine'
-    inventoryFileLinkedArtifactOnRemoteMachine: 'ansible/hosts'
-
+    sshEndpoint: 'fitness-server-ssh'
+    playbookPathOnAgentMachine: 'ansible/backup.yml'
+    inventoriesAgentMachine: 'file'
+    inventoryFileOnAgentMachine: 'ansible/hosts'
+    failOnStdErr: true
 
