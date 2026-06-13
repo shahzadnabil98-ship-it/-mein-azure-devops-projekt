@@ -1,6 +1,6 @@
 schedules:
-- cron: "45 7 * * *" # 07:45 Uhr UTC entspricht 09:45 Uhr deutscher Zeit
-  displayName: Test-Backup um 09:45 Uhr
+- cron: "0 9 * * *" # 09:00 Uhr UTC entspricht 11:00 Uhr deutscher Zeit
+  displayName: Tägliches Backup um 11:00 Uhr
   branches:
     include:
     - main
@@ -14,7 +14,8 @@ pool:
 steps:
 - task: Ansible@0
   inputs:
-    ansibleInterface: 'agentMachine'
+    ansibleInterface: 'remoteMachine'
+    ansibleEndpoint: 'fitness-server-ssh' # Dein genauer Name der Service Connection
     playbookPathOnAgentMachine: 'ansible/backup.yml'
     inventoriesAgentMachine: 'file'
     inventoryFileOnAgentMachine: 'ansible/hosts'
