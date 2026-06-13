@@ -15,8 +15,10 @@ steps:
 - task: Ansible@0
   inputs:
     ansibleInterface: 'remoteMachine'
-    ansibleEndpoint: 'fitness-server-ssh' # Dein genauer Name der Service Connection
+    ansibleEndpoint: 'fitness-server-ssh'
+    connectionOverSsh: true                 # Diese Zeile zwingend hinzufügen!
     playbookPathOnAgentMachine: 'ansible/backup.yml'
     inventoriesAgentMachine: 'file'
     inventoryFileOnAgentMachine: 'ansible/hosts'
     failOnStdErr: true
+
