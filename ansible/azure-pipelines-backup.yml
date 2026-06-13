@@ -16,9 +16,8 @@ steps:
   inputs:
     ansibleInterface: 'remoteMachine'
     ansibleEndpoint: 'fitness-server-ssh'
-    connectionOverSsh: true                 # Diese Zeile zwingend hinzufügen!
+    connectionOverSsh: true
     playbookPathOnAgentMachine: 'ansible/backup.yml'
     inventoriesAgentMachine: 'file'
     inventoryFileOnAgentMachine: 'ansible/hosts'
     failOnStdErr: true
-
