@@ -27,4 +27,4 @@
         --container-name "database-backups" 
         --file "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
         --name "db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
-        --sas-token "HIER_DEIN_SAS_TOKEN_HINTERLEGEN"
+        --sas-token "se=2026-06-15&sp=wacu&sv=2026-04-06&ss=b&srt=co&sig=SXsX34YIKY0vFpb1OwUZipW5mK1wlca7J7yeR66yErI%3D"
