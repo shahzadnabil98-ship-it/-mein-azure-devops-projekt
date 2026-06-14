@@ -16,14 +16,15 @@
 
     - name: Datenbank exportieren via Sudo-Shell
       ansible.builtin.shell: >
-        sudo -u postgres pg_dump fitness_db 
+        pg_dump -U postgres fitness_db
         > "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
+      become: yes
 
-    - name: Backup via Azure CLI in den Blob Storage hochladen
+    - name: Backup via Azure CLI mit SAS-Token hochladen
       ansible.builtin.shell: >
         az storage blob upload 
         --account-name "fitnessbackupnabil" 
         --container-name "database-backups" 
-        --file "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
-        --name "db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
-        --auth-mode login
+        --file "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql" \
+        --name "db_backup_{{ ansible_facts['date_time']['date'] }}.sql" \
+        --sas-token "HIER_DEIN_SAS_TOKEN_HINTERLEGEN"
