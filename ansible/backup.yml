@@ -10,9 +10,7 @@
       ansible.builtin.file:
         path: "{{ backup_dir }}"
         state: directory
-        owner: postgres
-        group: postgres
-        mode: '0755'
+        mode: '0777'
 
     - name: Datenbank exportieren (Beispiel PostgreSQL)
       community.postgresql.postgresql_db:
@@ -20,7 +18,7 @@
         name: fitness_db
         target: "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
         login_user: postgres
-      become_user: postgres
+        login_host: localhost
 
     - name: Backup in Azure Blob Storage hochladen
       azure.azcollection.azure_rm_storageblob:
