@@ -18,11 +18,3 @@
       ansible.builtin.shell: >
         sudo -u postgres pg_dump fitness_db 
         > "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
-
-    - name: Backup in Azure Blob Storage hochladen
-      azure.azcollection.azure_rm_storageblob:
-        resource_group: "DeineResourceGroup"
-        storage_account: "DeinStorageAccount"
-        container: "database-backups"
-        blob: "db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
-        src: "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
