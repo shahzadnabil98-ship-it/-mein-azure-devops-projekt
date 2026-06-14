@@ -60,24 +60,17 @@ steps:
     echo "Starte Ansible-Playbook..."
     ansible-playbook -i ansible/hosts ansible/backup.yml
   displayName: 'Vollautomatisches Datenbank-Backup via Ansible'
-  # ... (Deine bisherigen Steps für SSH und Ansible bleiben unverändert) ...
-
-- task: DownloadSecureFile@1
-  displayName: 'Lade den SSH-Key für den Datei-Download'
-  inputs:
-    secureFile: 'id_rsa' # Falls du den Key in Azure DevOps Secure Files hochgeladen hast
 
 - script: |
-    # Das fertige Backup vom Server auf den Azure DevOps Agenten kopieren
-    scp -i $(Agent.TempDirectory)/id_rsa azureuser@108.142.232.149:/var/backups/fitness_db/db_backup_$(date +%Y-%m-%d).sql $(Build.ArtifactStagingDirectory)/
+    # Das fertige Backup mit dem bereits vorhandenen SSH-Key vom Server holen
+    scp -i ~/.ssh/id_rsa azureuser@108.142.232.149:/var/backups/fitness_db/db_backup_$(date +%Y-%m-%d).sql $(Build.ArtifactStagingDirectory)/
   displayName: 'Backup-Datei vom Server herunterladen'
 
 - task: AzureFileCopy@4
   displayName: 'Backup in Azure Blob Storage hochladen'
   inputs:
     SourcePath: '$(Build.ArtifactStagingDirectory)/db_backup_*.sql'
-    azureSubscription: 'DEINE_AZURE_SERVICE_CONNECTION' # Name deiner Azure-Verbindung in DevOps
+    azureSubscription: 'DEINE_AZURE_SERVICE_CONNECTION' # <- Hier echten Namen eintragen!
     Destination: 'AzureBlob'
-    storage: 'DeinStorageAccount'
+    storage: 'DeinStorageAccount' # <- Hier echten Namen eintragen!
     ContainerName: 'database-backups'
-
