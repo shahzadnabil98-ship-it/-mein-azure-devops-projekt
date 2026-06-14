@@ -1,7 +1,6 @@
 ---
 - name: Datenbank-Backup für Fitness-App erstellen
   hosts: fitness_server
-  become: yes
   vars:
     backup_dir: "/var/backups/fitness_db"
 
@@ -13,8 +12,18 @@
         owner: postgres
         group: postgres
         mode: '0755'
+      become: yes
 
     - name: Datenbank exportieren via Sudo-Shell
       ansible.builtin.shell: >
         sudo -u postgres pg_dump fitness_db 
         > "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
+
+    - name: Backup via Azure CLI in den Blob Storage hochladen
+      ansible.builtin.shell: >
+        az storage blob upload 
+        --account-name "fitnessbackupnabil" 
+        --container-name "database-backups" 
+        --file "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
+        --name "db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
+        --auth-mode login
