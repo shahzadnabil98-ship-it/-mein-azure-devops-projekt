@@ -10,15 +10,19 @@
       ansible.builtin.file:
         path: "{{ backup_dir }}"
         state: directory
-        mode: '0777'
+        owner: postgres
+        group: postgres
+        mode: '0755'
 
     - name: Datenbank exportieren (Beispiel PostgreSQL)
       community.postgresql.postgresql_db:
         state: dump
         name: fitness_db
         target: "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
-        login_user: postgres
-        login_host: localhost
+      become_user: postgres
+      vars:
+        # DIESE ZEILE BEHEBT DEN NEULICHEN CHMOD-RECHTEFEHLER:
+        ansible_common_remote_group: postgres
 
     - name: Backup in Azure Blob Storage hochladen
       azure.azcollection.azure_rm_storageblob:
