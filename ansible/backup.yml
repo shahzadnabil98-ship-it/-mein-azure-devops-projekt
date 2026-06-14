@@ -16,7 +16,7 @@
 
     - name: Datenbank exportieren via Sudo-Shell
       ansible.builtin.shell: >
-        pg_dump -h 127.0.0.1 -U postgres fitness_db
+        PGPASSWORD="" pg_dump -h 127.0.0.1 -U postgres fitness_db
         > "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
       become: yes
 
