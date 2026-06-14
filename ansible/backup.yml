@@ -4,26 +4,28 @@
   become: yes
   vars:
     backup_dir: "/var/backups/fitness_db"
-    date: "{{ ansible_date_time.date }}"
 
   tasks:
     - name: Backup-Verzeichnis sicherstellen
       ansible.builtin.file:
         path: "{{ backup_dir }}"
         state: directory
-        mode: '0700'
+        owner: postgres
+        group: postgres
+        mode: '0755'
 
     - name: Datenbank exportieren (Beispiel PostgreSQL)
       community.postgresql.postgresql_db:
         state: dump
         name: fitness_db
-        target: "{{ backup_dir }}/db_backup_{{ date }}.sql"
-      # Hinweis: Falls du MySQL nutzt, verwende community.mysql.mysql_db
+        target: "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
+        login_user: postgres
+      become_user: postgres
 
     - name: Backup in Azure Blob Storage hochladen
       azure.azcollection.azure_rm_storageblob:
         resource_group: "DeineResourceGroup"
         storage_account: "DeinStorageAccount"
         container: "database-backups"
-        blob: "db_backup_{{ date }}.sql"
-        src: "{{ backup_dir }}/db_backup_{{ date }}.sql"
+        blob: "db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
+        src: "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
