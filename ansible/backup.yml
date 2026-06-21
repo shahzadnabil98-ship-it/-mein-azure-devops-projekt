@@ -13,13 +13,19 @@
         state: directory
         mode: '0700'
 
+    # 🟢 NEU: Installiert das benötigte MySQL-Paket für Python 3
+    - name: PyMySQL Paket für Ansible installieren
+      ansible.builtin.apt:
+        name: python3-pymysql
+        state: present
+        update_cache: yes
+
     - name: Datenbank exportieren (MySQL)
       community.mysql.mysql_db:
         state: dump
         name: fitness_db
         target: "{{ backup_dir }}/db_backup_{{ date }}.sql"
 
-    # 🟢 HIER GENAU FÜGEN SIE DEN NEUEN TASK EIN:
     - name: Backup via Azure CLI mit Account Key hochladen
       ansible.builtin.shell: |
         az storage blob upload \
@@ -27,6 +33,4 @@
           --container-name "database-backups" \
           --file "{{ backup_dir }}/db_backup_{{ date }}.sql" \
           --name "db_backup_{{ date }}.sql" \
-          --account-key "{{ lookup('env', 'AZURE_STORAGE_KEY') }}"
-      environment:
-        AZURE_STORAGE_KEY: "$(STORAGE_KEY)"
+          --account-key "{{ lookup('env', 'STORAGE_KEY') }}"
