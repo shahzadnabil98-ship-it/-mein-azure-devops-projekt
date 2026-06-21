@@ -1,6 +1,6 @@
 schedules:
-- cron: "9 9 * * *" # 09:09 Uhr UTC entspricht 11:09 Uhr deutscher Zeit
-  displayName: Test-Backup um 11:09 Uhr
+- cron: "30 9 * * *" # 09:30 Uhr UTC entspricht exakt 11:30 Uhr deutscher Zeit
+  displayName: Automatisches Backup um 11:30 Uhr
   branches:
     include:
     - main
@@ -10,6 +10,10 @@ trigger: none
 
 pool:
   vmImage: 'ubuntu-latest'
+
+# 🔐 Lädt die sichere Variablengruppe aus der Library für den Upload
+variables:
+- group: fitness-secrets
 
 steps:
 - script: |
@@ -56,7 +60,8 @@ steps:
     # 4. Ansible installieren
     sudo apt-get update && sudo apt-get install -y ansible
 
-    # 5. Das Ansible-Playbook starten
+    # 5. Das Ansible-Playbook starten (übergibt den geheimen Schlüssel aus DevOps)
     echo "Starte Ansible-Playbook..."
+    export STORAGE_KEY="$(STORAGE_KEY)"
     ansible-playbook -i ansible/hosts ansible/backup.yml
   displayName: 'Vollautomatisches Datenbank-Backup via Ansible'
