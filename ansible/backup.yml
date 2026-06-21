@@ -13,7 +13,6 @@
         state: directory
         mode: '0700'
 
-    # 🟢 NEU: Installiert das benötigte MySQL-Paket für Python 3
     - name: PyMySQL Paket für Ansible installieren
       ansible.builtin.apt:
         name: python3-pymysql
@@ -25,6 +24,9 @@
         state: dump
         name: fitness_db
         target: "{{ backup_dir }}/db_backup_{{ date }}.sql"
+        # 🔑 HIER DIE ZUGANGSDATEN DEINER DATENBANK EINTRAGEN:
+        login_user: "root"                     # Oder Ihr spezifischer DB-Nutzer
+        login_password: "IHR_DATENBANK_PASSWORT" # Tragen Sie hier das Passwort für die DB ein
 
     - name: Backup via Azure CLI mit Account Key hochladen
       ansible.builtin.shell: |
