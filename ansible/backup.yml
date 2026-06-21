@@ -24,11 +24,10 @@
         state: dump
         name: fitness_db
         target: "{{ backup_dir }}/db_backup_{{ date }}.sql"
-        # 🔑 HIER DIE ZUGANGSDATEN DEINER DATENBANK EINTRAGEN:
-        login_user: "root"                     # Oder Ihr spezifischer DB-Nutzer
-        login_password: "Shahzad-1998" # Tragen Sie hier das Passwort für die DB ein
+        login_user: "root"
+        login_password: "Shahzad-1998"
 
-       - name: Backup via Azure CLI mit Account Key hochladen
+    - name: Backup via Azure CLI mit Account Key hochladen
       ansible.builtin.shell: |
         az storage blob upload \
           --account-name "fitnessbackupnabil" \
@@ -37,4 +36,3 @@
           --name "db_backup_{{ date }}.sql"
       environment:
         AZURE_STORAGE_KEY: "{{ lookup('env', 'STORAGE_KEY') }}"
-
