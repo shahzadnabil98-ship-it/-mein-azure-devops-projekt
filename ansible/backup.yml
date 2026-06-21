@@ -1,30 +1,32 @@
 ---
 - name: Datenbank-Backup für Fitness-App erstellen
   hosts: fitness_server
+  become: yes
   vars:
     backup_dir: "/var/backups/fitness_db"
+    date: "{{ ansible_date_time.date }}"
 
   tasks:
     - name: Backup-Verzeichnis sicherstellen
       ansible.builtin.file:
         path: "{{ backup_dir }}"
         state: directory
-        owner: postgres
-        group: postgres
-        mode: '0755'
-      become: yes
+        mode: '0700'
 
-    - name: Datenbank exportieren via Sudo-Shell
-      ansible.builtin.shell: >
-        PGPASSWORD="Shahzad-1998" pg_dump -h 127.0.0.1 -U postgres fitness_db
-        > "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql"
-      become: yes
+    - name: Datenbank exportieren (MySQL)
+      community.mysql.mysql_db:
+        state: dump
+        name: fitness_db
+        target: "{{ backup_dir }}/db_backup_{{ date }}.sql"
 
-    - name: Backup via Azure CLI mit SAS-Token hochladen
-      ansible.builtin.shell: >
-        az storage blob upload 
-        --account-name "fitnessbackupnabil" 
-        --container-name "database-backups" 
-        --file "{{ backup_dir }}/db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
-        --name "db_backup_{{ ansible_facts['date_time']['date'] }}.sql" 
-        --sas-token "se=2026-06-15&sp=wacu&sv=2026-04-06&ss=b&srt=co&sig=SXsX34YIKY0vFpb1OwUZipW5mK1wlca7J7yeR66yErI%3D"
+    # 🟢 HIER GENAU FÜGEN SIE DEN NEUEN TASK EIN:
+    - name: Backup via Azure CLI mit Account Key hochladen
+      ansible.builtin.shell: |
+        az storage blob upload \
+          --account-name "fitnessbackupnabil" \
+          --container-name "database-backups" \
+          --file "{{ backup_dir }}/db_backup_{{ date }}.sql" \
+          --name "db_backup_{{ date }}.sql" \
+          --account-key "{{ lookup('env', 'AZURE_STORAGE_KEY') }}"
+      environment:
+        AZURE_STORAGE_KEY: "$(STORAGE_KEY)"
