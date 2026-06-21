@@ -28,11 +28,13 @@
         login_user: "root"                     # Oder Ihr spezifischer DB-Nutzer
         login_password: "Shahzad-1998" # Tragen Sie hier das Passwort für die DB ein
 
-    - name: Backup via Azure CLI mit Account Key hochladen
+       - name: Backup via Azure CLI mit Account Key hochladen
       ansible.builtin.shell: |
         az storage blob upload \
           --account-name "fitnessbackupnabil" \
           --container-name "database-backups" \
           --file "{{ backup_dir }}/db_backup_{{ date }}.sql" \
-          --name "db_backup_{{ date }}.sql" \
-          --account-key "{{ lookup('env', 'STORAGE_KEY') }}"
+          --name "db_backup_{{ date }}.sql"
+      environment:
+        AZURE_STORAGE_KEY: "{{ lookup('env', 'STORAGE_KEY') }}"
+
