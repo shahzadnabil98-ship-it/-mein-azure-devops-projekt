@@ -1,22 +1,67 @@
 schedules:
-- cron: "9 9 * * *" # 09:09 Uhr UTC entspricht 11:09 Uhr deutscher Zeit
-  displayName: Test-Backup um 11:09 Uhr
+- cron: "30 9 * * *" # 09:30 Uhr UTC entspricht exakt 11:30 Uhr deutscher Zeit
+  displayName: Automatisches Backup um 11:30 Uhr
   branches:
     include:
     - main
   always: true
 
-
-trigger: none # Verhindert automatischen Start bei Code-Push
+trigger: none
 
 pool:
   vmImage: 'ubuntu-latest'
 
+# 🔐 Lädt die sichere Variablengruppe aus der Library für den Upload
+variables:
+- group: fitness-secrets
+
 steps:
-- task: Ansible@0
-  inputs:
-    ansibleInterface: 'agentMachine'
-    playbookPathOnAgentMachine: 'ansible/backup.yml'
-    inventoriesAgentMachine: 'file'
-    inventoryFileOnAgentMachine: 'ansible/hosts'
-    failOnStdErr: true
+- script: |
+    # 1. SSH-Verzeichnis erstellen
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+
+    # 2. Den privaten Schlüssel absolut sauber in die Datei schreiben
+    cat << 'EOF' > ~/.ssh/id_rsa
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpQIBAAKCAQEAx8EFdHNNG6foPbVJ3uogix6OMfVgnaUxjiB4VdZgilfJsUDF
+    iMLpzqFkgwjn4t1vaQs4eYvyiys9ROtZmAdRTUyb6zXsYU4vJ4BX6KmmbiCOmznG
+    KlSa2K0RHpI1UFfuvx1xplhdbbL2X1+G1avCjJbDKGKgTjYlsCeI52a51JQOCkxk
+    TFisUYG4QorZErGEXAPqnFicb1z73a4hsLizqZ4jgPounO/Z70gWMCtjQFjdzZda
+    AIyjLCid2TSBcz4iiaJfybpE5R6q9Z7/WsZfGfInHuv+JTjnFOvBnUD5RWRB5gLw
+    qDgoufHgs5kBiC0ClCR6F+fGkcDoZ1IBuU7n9QIDAQABAoIBAQCCoFYZ3eC5yiaU
+    W/4vuPmJIHUqdGU3EjUC1Xb74xIExf3OXSYQFi5hgqdBDUzezaGylrTav0rf+Wm6
+    rRFM2tQu8X8w5HVs+HzbnxFdw7tjXwUCu1g8jFEqipqcXE5i+O3WqsGMX1LRjuuQ
+    WN7K0eSKnXiH618bZktlE6VydXnmabeyDVhrI/GwQtr+Ve1wGzsxlrC7wqR0sO3t
+    4vCq8q9DDR4J8BhZ6q48u70Epv35KCI3CVG/GRE1F9SMSSSvkka4Pi8C5wCWZ5Rh
+    J75SR+2Ems0LqTdpM8Fb1ydKgHK2Mswc3p1ce78e+fOylZJ3T+Dr5udCQVtUyhXd
+    xYRC2+nNAoGBAOSCPhxH6jH5OreJPFORwWWs/AKQmS0QqdxrEqCqiMgHK2pDRSIo
+    X0SwzFDHev1RFPiPRwouaaHR8w/8GRXPswhqsRPSr8NZlPFgmNr158Gqr/HRzPQ7
+    hmDNzGmb768xh2xFK8yLQoKIghePoND9nrx+mUihtbZ3BigSHYUBr2V/AoGBAN/J
+    K8r33g+o1jNUNtOZXW+4JBSwI2FAvbQ0BPjhUtJNmzju3r81NhFeLaEToOGznVsu
+    JxEtAScIBYfRZrPrCeWL2Wz6rcE+ExVeyQOVDh3E18n+QOUvqxEBYWb9BjWB6aO2
+    AW/fYS8RdHPta1HZboxCqt/6bhLc/IaknlQuCzSLAoGBAIexQ7q9hbe5PQHiD528
+    jvCWwWuwfBVDsOp/9qbLvb+yajiGy9XVzYTXy+woGMO2U1Kqmk/UccuzBbg3Rpoq
+    JTFZUd/om5DQcF7JsttLbR0XA7YAlMlvU4PGkZ0hCTqqmbVUegbTp2ImN8JP+vo/
+    sPRT5Sg5RtOcaF6BK2BhOMt3AoGBAMtFRxMZLMramJ6NKzPvBdE52QQ1rh1jmi06
+    Zx3ORdWjCpCfYRMbeV4zRo0ecC8zYIZ3GKNgVsCmZ6ejzH82yomIC1oTJYr3IIxz
+    yXEIjob5yuy+lyHWt7M9psTOpjoqJBhBdXKx2+vOFhJLIQV61BBxahcCucNGmdaP
+    ZwWdwS3bAoGAFTIH0yeSMqRTuaMqnjzYqRhuZj/GVmYvtEd6gaaWdl48NTgzWFrq
+    M7e1hRR33+K1RKQ6G+fHqk1DmYBdAa9zit6qPb91knRQytptVsCH9eWde4+RQASN
+    xB3UciTtpixq62jfKfMAbMtVdQ4ebYU9G2lRyNreV44staTdzurE5zk=
+    -----END RSA PRIVATE KEY-----
+    EOF
+    
+    chmod 600 ~/.ssh/id_rsa
+
+    # 3. Den Server zu den bekannten Hosts hinzufügen
+    ssh-keyscan -H 108.142.232.149 >> ~/.ssh/known_hosts
+
+    # 4. Ansible installieren
+    sudo apt-get update && sudo apt-get install -y ansible
+
+    # 5. Das Ansible-Playbook starten (übergibt den geheimen Schlüssel aus DevOps)
+    echo "Starte Ansible-Playbook..."
+    export STORAGE_KEY="$(STORAGE_KEY)"
+    ansible-playbook -i ansible/hosts ansible/backup.yml
+  displayName: 'Vollautomatisches Datenbank-Backup via Ansible'

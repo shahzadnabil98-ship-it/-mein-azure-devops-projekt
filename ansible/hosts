@@ -1,2 +1,2 @@
 [fitness_server]
-localhost ansible_connection=local
+108.142.232.149 ansible_user=azureuser
