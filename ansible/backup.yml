@@ -13,17 +13,20 @@
         state: directory
         mode: '0700'
 
-    - name: Datenbank exportieren (Beispiel PostgreSQL)
-      community.postgresql.postgresql_db:
+    - name: Datenbank exportieren (MySQL)
+      community.mysql.mysql_db:
         state: dump
         name: fitness_db
         target: "{{ backup_dir }}/db_backup_{{ date }}.sql"
-      # Hinweis: Falls du MySQL nutzt, verwende community.mysql.mysql_db
 
-    - name: Backup in Azure Blob Storage hochladen
-      azure.azcollection.azure_rm_storageblob:
-        resource_group: "DeineResourceGroup"
-        storage_account: "DeinStorageAccount"
-        container: "database-backups"
-        blob: "db_backup_{{ date }}.sql"
-        src: "{{ backup_dir }}/db_backup_{{ date }}.sql"
+    # 🟢 HIER GENAU FÜGEN SIE DEN NEUEN TASK EIN:
+    - name: Backup via Azure CLI mit Account Key hochladen
+      ansible.builtin.shell: |
+        az storage blob upload \
+          --account-name "fitnessbackupnabil" \
+          --container-name "database-backups" \
+          --file "{{ backup_dir }}/db_backup_{{ date }}.sql" \
+          --name "db_backup_{{ date }}.sql" \
+          --account-key "{{ lookup('env', 'AZURE_STORAGE_KEY') }}"
+      environment:
+        AZURE_STORAGE_KEY: "$(STORAGE_KEY)"

@@ -1,10 +1,11 @@
 schedules:
-- cron: "25 6 * * *" # 06:25 Uhr UTC entspricht 08:25 Uhr deutscher Zeit (Sommerzeit)
-  displayName: Tägliches Backup um 08:25 Uhr
+- cron: "9 9 * * *" # 09:09 Uhr UTC entspricht 11:09 Uhr deutscher Zeit
+  displayName: Test-Backup um 11:09 Uhr
   branches:
     include:
     - main
   always: true
+
 
 trigger: none # Verhindert automatischen Start bei Code-Push
 
