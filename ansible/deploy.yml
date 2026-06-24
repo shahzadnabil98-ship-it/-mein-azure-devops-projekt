@@ -1,13 +1,12 @@
 ---
 - name: Deployment der Fitness Webapp auf Azure VM
-  hosts: localhost
-  connection: local
-  gather_facts: false
+  hosts: all              # <-- Geändert von localhost auf all
+  gather_facts: false     # Bleibt so
 
   tasks:
     - name: Definiere Projektverzeichnis auf der VM
       ansible.builtin.set_fact:
-        project_dir: "/home/azureuser/fitness_app" # Standard-Pfad für Azure-VMs
+        project_dir: "/home/azureuser/fitness_app"
 
     - name: Erstelle Projektverzeichnis falls nicht existent
       ansible.builtin.file:
