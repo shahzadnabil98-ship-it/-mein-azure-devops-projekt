@@ -23,7 +23,7 @@ steps:
     
     # ⚠️ WICHTIG: Ersetze '1.2.3.4' mit der echten IP-Adresse deiner Azure-VM!
     # (Alternativ, falls du einen SSH-Key nutzt, füge diesen hier temporär hinzu)
-    VM_IP="1.2.3.4" 
+    VM_IP="108.142.232.149"
     
     # Wir sagen Ansible, dass es die VM als Ziel nutzen soll (-i) 
     # und übergeben den Admin-User 'azureuser'
