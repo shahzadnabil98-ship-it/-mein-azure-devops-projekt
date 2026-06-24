@@ -1,0 +1,47 @@
+---
+- name: Deployment der Fitness Webapp auf Azure VM
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Definiere Projektverzeichnis auf der VM
+      ansible.builtin.set_fact:
+        project_dir: "/home/azureuser/fitness_app" # Standard-Pfad für Azure-VMs
+
+    - name: Erstelle Projektverzeichnis falls nicht existent
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Kopiere Webapp-Dateien auf die Azure VM
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ project_dir }}/"
+        mode: '0644'
+      loop:
+        - "../app.py"
+        - "../requirements.txt"
+
+    - name: Kopiere Frontend-Ordner (Templates)
+      ansible.builtin.copy:
+        src: "../templates"
+        dest: "{{ project_dir }}/"
+        mode: '0755'
+
+    - name: Installiere Python-Abhängigkeiten auf der VM
+      ansible.builtin.shell: |
+        pip3 install -r requirements.txt --break-system-packages
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Prüfe ob Flask bereits läuft und beende es (Port 5000)
+      ansible.builtin.shell: "fuser -k 5000/tcp || true"
+
+    - name: Flask Server im Hintergrund mit API-Key starten
+      ansible.builtin.shell: "nohup python3 app.py > flask.log 2>&1 &"
+      args:
+        chdir: "{{ project_dir }}"
+      environment:
+        OPENAI_API_KEY: "{{ openai_api_key }}"
