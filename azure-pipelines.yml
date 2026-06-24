@@ -14,11 +14,26 @@ steps:
     pip install -r requirements.txt
   displayName: 'requirements.txt validieren'
 
-# Hier nutzen wir den offiziellen Task, übergeben aber den Pfad absolut korrekt!
-- task: Ansible@0
-  displayName: 'Ansible Deployment auf Azure VM ausfuehren'
-  inputs:
-    ansibleInterface: 'agentMachine'
-    playbookPathOnAgentMachine: '$(Build.SourcesDirectory)/Ansible/deploy.yml'
-    inventoriesAgentMachine: 'noInventory'
-    args: '--extra-vars "openai_api_key=$(OPENAI_API_KEY)"'
+- script: |
+    echo "Installiere Ansible auf dem Build-Agent..."
+    pip install ansible
+    
+    echo "Prüfe aktuellen Pfad und Inhalt..."
+    pwd
+    ls -R
+    
+    echo "Führe Ansible Deployment aus..."
+    # Hier suchen wir dynamisch nach der deploy.yml, egal ob der Ordner groß oder klein geschrieben ist
+    PLAYBOOK_PATH=$(find . -name "deploy.yml" | head -n 1)
+    
+    if [ -z "$PLAYBOOK_PATH" ]; then
+      echo "FEHLER: deploy.yml wurde nirgendwo im Repository gefunden!"
+      exit 1
+    fi
+    
+    echo "Nutze Playbook unter: $PLAYBOOK_PATH"
+    ansible-playbook -i localhost, $PLAYBOOK_PATH --extra-vars "openai_api_key=$API_KEY_SECRET"
+  displayName: 'Ansible Deployment via Bash ausfuehren'
+  env:
+    # Hier mappen wir dein Azure-Pipeline-Secret sicher auf eine Umgebungsvariable
+    API_KEY_SECRET: $(OPENAI_API_KEY)
