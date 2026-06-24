@@ -1,30 +1,24 @@
 trigger:
-- main  # Triggert die Pipeline automatisch bei jedem Push in den main-Branch
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-- group: fitness-secrets # Falls du eine Variable Group nutzt, oder wir nutzen Pipeline-Variablen
-
 steps:
-# 1. Python auf dem Build-Server bereitstellen
 - task: UsePythonVersion@0
+  displayName: 'Python bereitstellen'
   inputs:
     versionSpec: '3.x'
-  displayName: 'Python für Validierung bereitstellen'
 
-# 2. Testweise die Requirements auf dem Build-Server installieren (Syntax-Check)
 - script: |
     pip install -r requirements.txt
   displayName: 'requirements.txt validieren'
 
-# 3. Ansible-Deployment ausführen
-# Hier übergeben wir den OpenAI-Key aus Azure DevOps direkt an Ansible!
+# Hier nutzen wir den offiziellen Task, übergeben aber den Pfad absolut korrekt!
 - task: Ansible@0
+  displayName: 'Ansible Deployment auf Azure VM ausfuehren'
   inputs:
     ansibleInterface: 'agentMachine'
-    playbookPath: 'Ansible/deploy.yml' # Pfad zu deiner deploy.yml im Ansible-Ordner
-  env:
-    OPENAI_API_KEY: $(OPENAI_API_KEY) # Holt das Secret aus Azure DevOps
-  displayName: 'Ansible Deployment auf Azure VM ausführen'
+    playbookPathOnAgentMachine: '$(Build.SourcesDirectory)/Ansible/deploy.yml'
+    inventoriesAgentMachine: 'noInventory'
+    args: '--extra-vars "openai_api_key=$(OPENAI_API_KEY)"'
