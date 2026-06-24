@@ -15,25 +15,24 @@ steps:
   displayName: 'requirements.txt validieren'
 
 - script: |
-    echo "Installiere Ansible auf dem Build-Agent..."
+    echo "Installiere Ansible und sshpass auf dem Build-Agent..."
+    sudo apt-get update && sudo apt-get install -y sshpass
     pip install ansible
     
-    echo "Prüfe aktuellen Pfad und Inhalt..."
-    pwd
-    ls -R
-    
-    echo "Führe Ansible Deployment aus..."
-    # Hier suchen wir dynamisch nach der deploy.yml, egal ob der Ordner groß oder klein geschrieben ist
+    echo "Führe Ansible Deployment DIREKT auf der Azure VM aus..."
     PLAYBOOK_PATH=$(find . -name "deploy.yml" | head -n 1)
     
-    if [ -z "$PLAYBOOK_PATH" ]; then
-      echo "FEHLER: deploy.yml wurde nirgendwo im Repository gefunden!"
-      exit 1
-    fi
+    # ⚠️ TRAGE HIER DEINE ECHTE ÖFFENTLICHE VM-IP AUS DEM AZURE-PORTAL EIN:
+    VM_IP="DEINE_ECHTE_AZURE_VM_IP" 
     
-    echo "Nutze Playbook unter: $PLAYBOOK_PATH"
-    ansible-playbook -i localhost, $PLAYBOOK_PATH --extra-vars "openai_api_key=$API_KEY_SECRET"
+    # Ansible-Befehl mit Passwort-Authentifizierung und API-Key Übergabe
+    ansible-playbook -i "$VM_IP," $PLAYBOOK_PATH \
+      --extra-vars "openai_api_key=$OPENAI_SECRET" \
+      --remote-user "azureuser" \
+      --ansible-ssh-pass "$VM_PASS" \
+      -e "ansible_ssh_pass=$VM_PASS"
   displayName: 'Ansible Deployment via Bash ausfuehren'
   env:
-    # Hier mappen wir dein Azure-Pipeline-Secret sicher auf eine Umgebungsvariable
-    API_KEY_SECRET: $(OPENAI_API_KEY)
+    # Hier mappen wir deine Azure DevOps Secrets sicher auf die Umgebungsvariablen
+    OPENAI_SECRET: $(OPENAI_API_KEY)
+    VM_PASS: $(VM_PASSWORD)
