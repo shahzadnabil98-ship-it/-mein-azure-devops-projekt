@@ -1,7 +1,7 @@
 ---
 - name: Deployment der Fitness Webapp auf Azure VM
-  hosts: all              # <-- Geändert von localhost auf all
-  gather_facts: false     # Bleibt so
+  hosts: all
+  gather_facts: false
 
   tasks:
     - name: Definiere Projektverzeichnis auf der VM
@@ -23,24 +23,28 @@
         - "../app.py"
         - "../requirements.txt"
 
-    - name: Kopiere Frontend-Ordner (Templates)
-      ansible.builtin.copy:
-        src: "../templates"
-        dest: "{{ project_dir }}/"
+    - name: Erstelle den von Flask benoetigten templates-Ordner auf der VM
+      ansible.builtin.file:
+        path: "{{ project_dir }}/templates"
+        state: directory
         mode: '0755'
 
-    - name: Installiere Python-Abhängigkeiten auf der VM
+    - name: Kopiere die index.html in den templates-Ordner auf der VM
+      ansible.builtin.copy:
+        src: "../index.html"
+        dest: "{{ project_dir }}/templates/index.html"
+        mode: '0644'
+
+    - name: Installiere Python-Abhaengigkeiten auf der VM
       ansible.builtin.shell: |
-        pip3 install -r requirements.txt --break-system-packages
+        pip3 install -r requirements.txt
       args:
         chdir: "{{ project_dir }}"
 
-    - name: Prüfe ob Flask bereits läuft und beende es (Port 5000)
+    - name: Pruefe ob Flask bereits laeuft und beende es (Port 5000)
       ansible.builtin.shell: "fuser -k 5000/tcp || true"
 
-    - name: Flask Server im Hintergrund mit API-Key starten
+    - name: Flask Server im Hintergrund starten
       ansible.builtin.shell: "nohup python3 app.py > flask.log 2>&1 &"
       args:
         chdir: "{{ project_dir }}"
-      environment:
-        OPENAI_API_KEY: "{{ openai_api_key }}"
